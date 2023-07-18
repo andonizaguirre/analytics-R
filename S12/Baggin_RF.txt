@@ -1,0 +1,136 @@
+#------------------------------------------------------------------#
+#                               LIBRARIAS                          #
+#------------------------------------------------------------------#
+library(ggplot2)
+library(reshape)
+library(ggpubr)
+library(reshape2)
+library(dplyr)
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(purrr)
+library(precrec)
+library(ROSE)
+library(ROCR)
+#------------------------------------------------------------------#
+#                       CARGANDO LA BASE DE DATOS                  #
+#------------------------------------------------------------------#
+Datos<-read.delim("clipboard")
+head(Datos,10)
+str(Datos)
+Datos$Educacion<-ordered(Datos$Educacion,c("No.Sup","Sup.Incomp","Sup.Comp"))
+
+#------------------------------------------------------------------#
+#               DATOS DE ENTRENAMIENTO Y DE PRUEBA                 #
+#------------------------------------------------------------------#
+RNGkind(sample.kind = "Rounding")
+set.seed(100)
+indice<- createDataPartition(Datos$Credito, p=0.7, list=FALSE)
+data.train <- Datos[ indice, ]                         
+data.test  <- Datos[-indice, ] 
+dim(data.train)
+dim(data.test)
+
+
+#------------------------------------------------------------------#
+#                      EL ALGORITMO BAGGING                        #
+#------------------------------------------------------------------#
+RNGkind(sample.kind = "Rounding")
+set.seed(100)
+ctrl <- trainControl(method="cv",number=10)
+modelo_bag <- train(Credito ~ ., 
+                    data = data.train, 
+                    method = "treebag",
+                    trControl = ctrl, 
+                    tuneLength = 5, 
+                    metric="Accuracy")
+modelo_bag
+
+pred_bag <- predict(modelo_bag, newdata=data.test[,-1],type="raw")
+confusionMatrix(data= pred_bag, reference= as.factor(data.test$Credito), positive="Si")
+
+# Predicción correcta y error
+# ---------------------------
+accuracy <- mean(data.test$Credito==pred_bag) ; accuracy
+error <- mean(data.test$Credito!=pred_bag) ; error
+
+# Curva ROC
+# -----------
+pred_bag2 <- predict(modelo_bag, newdata=data.test[,-1],type="prob")
+roc.curve(data.test$Credito, pred_bag2[,2],lty=2,lwd=1.8,col="blue" ,main="ROC curves")
+
+
+# Importancia de Variables
+# -------------------------
+impor=varImp(modelo_bag)
+impor
+plot(impor)
+
+#------------------------------------------------------------------#
+#                   EL ALGORITMO RANDOM FOREST                     #
+#------------------------------------------------------------------#
+RNGkind(sample.kind = "Rounding")
+set.seed(100)
+modelLookup(model='rf')
+ctrl <- trainControl(method="cv",number=10)
+
+modelo_rf <- train(Credito ~ ., 
+                   data = data.train, 
+                   method = "rf", 
+                   trControl = ctrl, 
+                   tuneLength = 5,
+                   metric="Accuracy")
+
+modelo_rf
+
+pred_rf <- predict(modelo_rf, newdata=data.test[,-1],type="raw")
+confusionMatrix(data= pred_rf, reference= as.factor(data.test$Credito), positive="Si")
+
+# Prediccion correcta y error
+# ---------------------------
+accuracy <- mean(data.test$Credito==pred_rf) ; accuracy
+error <- mean(data.test$Credito!=pred_rf) ; error
+
+# Curva ROC
+# -----------
+pred_rf2 <- predict(modelo_rf, newdata=data.test[,-1],type="prob")
+roc.curve(data.test$Credito, pred_rf2[,2],lty=2,lwd=1.8,col="blue" ,main="ROC curves")
+
+# Importancia de Variables
+# -------------------------
+impor=varImp(modelo_rf)
+impor
+plot(impor)
+
+
+
+# Nuevas predicciones
+#------------------------------
+nuevos<-read.delim("clipboard")
+nuevos$Educacion<-ordered(nuevos$Educacion,c("No.Sup","Sup.Incomp","Sup.Comp"))
+pred_nuevos <- predict(modelo_bag, newdata=nuevos,type="prob")
+final<-data.frame(pred_nuevos,nuevos)
+final
+
+pred_nuevos <- predict(modelo_bag, newdata=nuevos,type="raw")
+final<-data.frame(pred_nuevos,nuevos)
+final
+
+# Guardar cualquier archivo
+#------------------------------
+setwd("E:/PREDICCIONES")
+
+write.table(final, file = "predicciones.txt", sep = "\t", eol = "\n", dec = ".", row.names = F, col.names = TRUE)
+
+# Guardar modelo en UCV O DISCO
+#------------------------------
+saveRDS(modelo_bag, "./modelo_boos.rds")
+
+# Leer el modelo final
+#---------------------
+super_model <- readRDS("./modelo_bag.rds")
+print(super_model)
+# Hacer predicciones
+final_predictions <- predict(super_model, nuevos)
+final_predictions

@@ -1,0 +1,104 @@
+#==================================================================#
+#          REGRESIÓN LOGÍSTICA binaria                             # 
+#==================================================================#
+Seguros<-read.delim("clipboard")
+Seguros$Seguro <- as.factor(Seguros$Seguro)
+head(Seguros)
+str(Seguros)
+#------------------------------------------------------------------#
+#                             Prueba Total                         #
+#------------------------------------------------------------------#
+library(rms)
+
+#Estadísico Omnibus y estadístico de Wald
+#---------------------
+lrm(formula = Seguro ~ Edad+Hijos+Empresa+Automóvil,scale=T,data=Seguros)
+
+#------------------------------------------------------------------#
+#                      Elección del modelo final                   #
+#------------------------------------------------------------------#
+Seguros.m1<-glm(Seguro ~ Sexo+Edad+Hijos+Ingresos+Empresa+Automóvil, family = binomial(link = logit),data=Seguros)
+summary(Seguros.m1)
+
+#  Selección de Variables  
+step <- stepAIC(Seguros.m1,direction="backward", trace=FALSE)
+step$anova
+
+
+# Formulando el modelo sin las variables no significativas
+lrm(formula = Seguro ~ Edad+Hijos+Empresa+Automóvil,scale=T,data=Seguros)
+
+Seguros.m2<-glm(Seguro ~ Edad+Hijos+Empresa+Automóvil, family = binomial(link = logit),data=Seguros)
+summary(Seguros.m2)
+
+anova(Seguros.m2,Seguros.m1,test = "Chisq")
+
+#----------------------------------------------------------
+# Cociente de ventajas (OR) e IC 95% 
+library(MASS)
+exp(cbind(OR = coef(Seguros.m2),confint.default(Seguros.m2)))
+
+#----------------------------------------------------------
+#------------------------------------------------------------------#
+#    Prueba de Hosmer y Lemeshow para adecuadión del modelo        #
+#------------------------------------------------------------------#
+library(generalhoslem)
+logitgof(Seguros$Seguro, fitted(Seguros.m2))
+
+#------------------------------------------------------------------#
+#    R2-medidas de bondad de ajuste y prueba del modelo            #
+#------------------------------------------------------------------#
+library(rcompanion)
+nagelkerke(Seguros.m2)
+
+
+#  Probabilidades y grupo estimadas 
+#------------------------------------------------------------------#
+#              Probabilidades y grupo estimadas                    #
+#------------------------------------------------------------------#
+proba.pred=predict(Seguros.m2,type="response")
+proba.pred
+clase.pred <- ifelse(proba.pred >= 0.5, "Sí", "No")
+finaldata = cbind(Seguros, proba.pred,clase.pred)
+ggplot(finaldata, aes(x = proba.pred, fill = Seguro)) + geom_density(alpha = 0.5)
+#------------------------------------------------------------------#
+#                      Tabla de clasificación                      #
+#------------------------------------------------------------------#
+
+# Calcular el accuracy
+#-----------------------
+accuracy <- mean(Seguros$Seguro==clase.pred)
+accuracy
+
+# Calcular el error de mala clasificación
+#----------------------------------------
+error <- mean(Seguros$Seguro!=clase.pred)
+error
+
+library(caret)
+confusionMatrix(as.factor(clase.pred),Seguros$Seguro,positive="Sí")
+
+# Curva Roc
+# ----------
+library(ROSE)
+roc.curve(Seguros$Seguro, proba.pred,lty=2,lwd=1.8,col="blue" ,main="ROC curves")
+
+#------------------------------------------------------------------#
+#                           Prediciendo datos                      #
+#------------------------------------------------------------------#
+
+# Estimando en forma particular.
+#---------------------
+p <- predict(Seguros.m2,data.frame(Edad=44,Hijos=3,Empresa=90,Automóvil="Sí"), type="response")
+p
+# para ecuación
+#---------------------
+log_odds <- predict(Seguros.m2,data.frame(Edad=44,Hijos=3,Empresa=90,Automóvil="Sí"), type="link")
+exp(log_odds)/(1+exp(log_odds))
+
+odds <-p/(1-p)
+odds
+exp(log_odds)
+# Cuando un cliente tiene (Edad=44,Hijos=3,Empresa=90,Automóvil="Sí"), 
+# es 2.467 veces más probable que adquiera el seguro a que no lo adquiera
+

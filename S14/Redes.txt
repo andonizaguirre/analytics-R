@@ -1,0 +1,88 @@
+#------------------------------------------------------------------#
+#                               LIBRARIAS                          #
+#------------------------------------------------------------------#
+library(ggplot2) # Gráficas
+library(ggpubr) # Conectar a las base de datos
+library(reshape2) # Condensar base de datos
+library(dplyr) # Resumenes de datos
+library(caret) # Partición y modelamiento
+library(purrr) # Enlaces
+library(precrec) # Curvas Roc
+library(ROSE)  # Curvas Roc
+library(nnet)  # Redes neuronales
+#------------------------------------------------------------------#
+#                       CARGANDO LA BASE DE DATOS                  #
+#------------------------------------------------------------------#
+Data
+Credito <- read_excel("D:/U DE LIMA/ANALÍTICA PREDICTIVA/CURSO DE ANALITICA PREDICTIVA-20220823T051850Z-001/CURSO DE ANALITICA PREDICTIVA/Semana 14/Credito.xlsx")
+
+Datos<-read.delim("clipboard")
+head(Datos,10)
+str(Datos)
+
+Datos$Credito <- as.factor(Datos$Credito)
+str(Datos)
+
+Datos_X <- scale(Datos[,-1])
+Credito <- Datos[,1]
+
+Datos <- data.frame(Credito,Datos_X)
+View(Datos)
+str(Datos)
+
+#------------------------------------------------------------------#
+#                    Particionando la data                         #
+#------------------------------------------------------------------#
+RNGkind(sample.kind = "Rounding")
+set.seed(100)
+indice<- createDataPartition(Datos$Credito, p=0.7, list=FALSE)
+data.train <- Datos[ indice, ]                         
+data.test  <- Datos[-indice, ] 
+dim(data.train)
+dim(data.test)
+head(data.train)
+
+table(data.train$Credito)
+
+#------------------------------------------------------------------#
+#                        Redes Neuronales                          #
+#------------------------------------------------------------------#
+set.seed(100)
+ctrl <- trainControl(method="cv", number=5)
+
+modelo_net <- train(Credito ~ .,
+                    data = data.train, 
+                    method = "nnet", 
+                    trControl = ctrl,
+                    na.action = na.omit,
+                    trace = FALSE)
+
+pred_net <- predict(modelo_net, newdata=data.test[,-1],type="raw")
+
+table(pred_net, data.test$Credito)
+
+confusionMatrix(data= pred_net, reference= as.factor(data.test$Credito), positive="Si")
+(113+56)/(113+44+11+56)
+
+# PredicciÃ³n correcta y error
+# ---------------------------
+accuracy <- mean(data.test$Credito==pred_net) ; accuracy
+error <- mean(data.test$Credito!=pred_net) ; error
+(44+11)/(113+44+11+56)
+# Curva ROC
+# -----------
+pred_net2 <- predict(modelo_net, newdata=data.test[,-1],type="prob")
+roc.curve(data.test$Credito, pred_net2[,2],lty=2,lwd=1.8,col="blue" ,main="ROC curves")
+
+# Importancia de Variables
+# -------------------------
+impor=varImp(modelo_net)
+impor
+plot(impor)
+
+Nuevos <- read.delim("clipboard")
+Nuevos <- scale(Nuevos)
+Nuevos
+
+pred <- predict(modelo_net, newdata =Nuevos, type="raw")
+data.frame(pred, Nuevos)

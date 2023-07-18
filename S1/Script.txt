@@ -1,0 +1,363 @@
+#########################################################
+###################### CURSO DE R #######################
+#########################################################
+
+#=======================================================#
+#             PARTE 1: CÁLCULOS MATEMÁTICOS             #
+#=======================================================#
+# Calculos matemáticos
+# --------------------
+4 + 4
+4 - 5
+8 * 9
+8 / 9 
+8 ^ 2
+8 ** 2
+8 + 8/9 * (4+5)^2 - 10
+
+sqrt(50)       # Raiz cuadrada
+exp(4)         # Exponencial
+log(30)        # Logaritmo natural o neperiano
+log10(30)      # Logaritmo en base 10
+log(30,base=4) # Logaritmo en cualquier base
+sin(30)
+cos(30)
+tan(30)
+factorial(10)  # Factorial de un número
+choose(5,2)    # Combinatoria
+abs(-10)       # Valor absoluto
+round(4.228, digits = 2)
+round(sqrt(12),3)
+
+#=======================================================#
+#                  PARTE 2: VECTORES                    #
+#=======================================================#
+# a) Generación de secuencias
+# ---------------------------
+x <- c(1, 5, 3, 4, 8)
+x
+x+2
+x^2
+x <- 1:10
+y <- -5:3
+1:4 + 1
+1:(4 + 1)
+x <- seq(from = 2, to = 18, by = 2)
+x <- seq(from = 2, to = 18, length = 30)
+z <- c(1:5, 7:10, seq(from = -7, to = 5, by = 2))
+rep(1, 5)
+x <- 1:3
+rep(x, 2)
+rep(x, length = 8)
+letras <- c("a","b","c")
+letras1 <- LETTERS[1:5]
+palabras <- c("manzana","pera", "uva")
+
+# b) Generación de secuencias aleatorias
+# --------------------------------------
+sample(10)
+sample(10, 3)
+sample(10, 7, replace = TRUE)
+sample(10, 7, replace = FALSE)
+
+# c) Selección de elementos de un vector
+# --------------------------------------
+x <- 1:5
+x[1]
+x[3]
+x[-2]
+x[c(1, 3)]
+names(x) <- c("a", "b", "c", "d", "e")
+x
+x[c("b", "e")]
+
+# d) Ordenación de vectores
+# --------------------------
+x1 <- c(5, 1, 8, 3)
+order(x1, decreasing = TRUE)
+order(x1, decreasing = FALSE)
+sort(x1, decreasing = TRUE)
+sort(x1, decreasing = FALSE)
+rev(x1)  # Invertir posición
+rank(x1)
+x2 <- c(3,3,4,5)
+rank(x2)
+x1[order(x1)]
+
+# e) Operaciones en vectores
+# --------------------------
+x <- c(10,15,35,14,18,55)
+sum(x)
+sum(x>8)
+sum(x<=10)
+cumsum(x)
+max(x)
+min(x)
+mean(x)
+median(x)
+quantile(x,0.75)
+quantile(x,0.5)
+diff(range(x))
+
+#=======================================================#
+#                  PARTE 3: MATRICES                    #
+#=======================================================#
+
+# a) Creación de matrices
+# ----------------------------
+a1 <- matrix(1:20, nrow = 5, byrow = FALSE) 
+a1
+a2 <- matrix(1:20, nrow = 5, byrow = TRUE)
+a2
+a2[3,]
+a2[c(2,3),]
+a2[,2]
+a2[2,3]
+x <- c(190, 8, 22, 191, 4, 1.7, 223, 80, 2, 210, 50, 3)
+datos <- matrix(x, nrow = 4, byrow = T)
+datos
+dim(datos)
+
+# b) Operaciones con matrices
+# ----------------------------
+A <- matrix(c(12,11,3,5,45,34,34,23,34),nrow=3, ncol=3, byrow=TRUE)
+A
+B <- matrix(c(8,9,4,5,25,34,33,23,14),nrow=3, ncol=3, byrow=FALSE)
+B
+
+t(A)            # traspuesta de la matriz
+solve(A)        # inversa de la matriz 
+diag(A)         # matriz diagonal
+det(A)          # determinante de una matriz
+eigen(A)        # valores y vectores propios
+svd(A)
+A^2 
+A*2
+A - 2
+A + B
+A - B
+A / B
+A * B
+A %*% B         # producto de matrices
+
+# c) solución de ecuaciones
+# -------------------------
+
+# 12X + 11Y +  3Z  = 10
+#  5X + 45Y + 34Z  = 20
+# 34X + 23Y + 34Z  = 30
+b <- c(10,20,30)  # solución del sistema de ecuaciones ( Ax=b)
+solve(A,b)
+library(MASS)
+fractions(solve(A, b))
+
+#=======================================================#
+#                  PARTE 4: DATA FRAME                  #
+#=======================================================#
+
+# a) Crear una base de datos
+# --------------------------
+Altura <- c(1.7, 1.68, 1.80, 1.75, 1.82, 1.58)
+Peso <- c(80.4, 71.12, 85.7, 75.91, 120.5, 42.0)
+Hermanos <- c(1, 0, 5, 4, 2, 3)
+Genero <- c("M", "F", "M", "F", "M", "F")
+CI <- c("Alto", "Alto", "Medio", "Bajo", "Alto", "Medio")
+
+df <- data.frame(Altura, Peso, Hermanos, Genero, CI)
+df
+
+# a) Seleccionar variables y observaciones
+# ----------------------------------------
+df$Altura
+df$Peso
+df[,"Altura"]
+df[,1]
+df[,c(1,4)]
+df[,c("Altura","CI")]
+df[,-2]
+df[,-c(2,3)]
+df[2,]
+df[c(1,3,5),]
+df[c(1,4),c(3,5)]
+
+# b) Filtrado 
+# ------------
+df
+df2 <- subset(df, CI=="Alto")
+df2
+df3 <- subset(df, CI==c("Alto","Medio"))
+df3
+df4 <- subset(df, CI !="Alto")
+df4
+df5 <- subset(df, Hermanos==4)
+df5
+df6 <- subset(df, Hermanos > 1)
+df6
+df7 <- subset(df, Hermanos <= 3)
+df7
+df8 <- subset(df, Hermanos != 4)
+df8
+
+
+# c) Crear nuevas variables en el dataframe 
+# -----------------------------------------
+df
+df$IMC <- df$Peso/df$Altura^2
+df
+df$Condicion <- ifelse(df$IMC<17, "Peso bajo", ifelse(df$IMC>30,"Obesidad","Normal"))
+df
+
+
+#=======================================================#
+#            PARTE 5: ESTADÍSTICA DESCRIPTIVA           #
+#=======================================================#
+# Lectura de datos
+library(readxl)
+DMark <- data.frame(read_excel("D:/Curso R/MarketingDirecto.xlsx", sheet = "Datos"))
+DMark <- read.delim("clipboard")
+head(DMark)
+str(DMark)
+
+#Ordenar niveles de variables categoricas ordinales
+DMark$Edad = factor(DMark$Edad,levels = c("Joven","Media","Adulta"),ordered=TRUE)
+DMark$Genero = as.factor(DMark$Genero)
+DMark$Vivienda = as.factor(DMark$Vivienda)
+DMark$Ecivil = as.factor(DMark$Ecivil)
+DMark$Ubicacion = as.factor(DMark$Ubicacion)
+DMark$Historial = factor(DMark$Historial,levels = c("Bajo","Medio","Alto"),ordered=TRUE)
+
+
+#------------------------------------------------------------------#
+#  a) Representación de Datos Cualitativos                         #
+#------------------------------------------------------------------#
+
+# Tabla de Frecuencia
+# -------------------
+fi<-table(DMark$Edad)
+fri<-prop.table(table(DMark$Edad))
+pi<-prop.table(table(DMark$Edad))*100
+edad.tabla<-t(rbind(fi,fri,pi))
+edad.tabla
+
+# Gráfico de Barras
+# -------------------
+barplot(pi, main="Distribución de las edades de los clientes", 
+        xlab="Grupo Etario",
+        ylab="Porcentaje de Clientes")
+
+barplot(table(DMark$Edad), main="Distribución de la Edad de los Clientes", 
+        col=1,xlab="Edad",ylab="# de Clientes")
+
+
+# Gráfico de Sectores Circulares
+pie(pi, main="Distribución de la Edad de los Clientes")
+pie(pi, main="Distribución de la Edad de los Clientes",col=c("red","black","yellow"))
+
+#------------------------------------------------------------------#
+#  b) Tablas de contingencia                                       #
+#------------------------------------------------------------------#
+tabla1=table(DMark$Edad,DMark$Historial)
+tabla1
+
+#------------------------------------------------------------------#
+#  c) Distribución en tablas  (gráficos )                          #
+#------------------------------------------------------------------#
+tabla2=prop.table(tabla1)
+tabla2
+
+# Barras agrupadas
+barplot(tabla2,col=2:4,beside = T,
+        xlab="Historial de Compra",
+        ylab="Proporción de Clientes",
+        main="Distribución del historial de compra según grupo etario")
+legend("topright",legend=levels(DMark$Edad),col=2:4,
+       pch=15,title="Grupo Etario")
+
+#------------------------------------------------------------------#
+#  d) Representación de Datos Cuantitativos Discretos              #
+#------------------------------------------------------------------#
+# Tabla de Frecuencias
+fi<-table(DMark$Hijos)
+fri<-prop.table(table(DMark$Hijos))
+pi<-prop.table(table(DMark$Hijos))*100
+hijos.tabla<-t(rbind(fi,fri,pi))
+hijos.tabla
+
+#Gráfico de Varas
+plot(pi, type="h", lwd=2,
+     xlab="Número de hijos",
+     ylab="Porcentaje de clientes",
+     main="Distribución del número de hijos de los clientes")
+points(x =as.numeric(row.names(pi)),
+       y =as.numeric(pi),
+       pch=19,cex=1.5)
+
+#------------------------------------------------------------------#
+#  e) Representación de Datos Cuantitativos Continuos              #
+#------------------------------------------------------------------#
+
+library(agricolae)
+(table.freq(hist(DMark$Monto,breaks = "Sturges"))) #Regla Sturges
+(table.freq(hist(DMark$Monto,breaks = "Scott")))   #Regla de Scott
+(table.freq(graph.freq(DMark$Monto,plot=FALSE)))   #Regla Sturges (Agricolae)
+
+# Histograma y polígono de frecuencia
+h1<-hist(DMark$Monto,breaks = "Sturges",
+         xlab="Monto",
+         ylab="Número de clientes",)
+polygon.freq(h1,frequency=1,col="red")
+
+# Tallo y Hojas
+stem(DMark$Monto)
+
+
+#Boxplots
+boxplot(DMark$Monto)
+boxplot(Monto~Edad,DMark)
+boxplot(DMark[,c("Salario","Monto")])
+
+
+#------------------------------------------------------------------#
+#  f) Análisis descriptivo                                         #
+#------------------------------------------------------------------#
+
+# Resumen básico
+summary(DMark$Monto)
+
+library(PASWR2)
+eda(DMark$Salario)
+
+
+# Función para calcular CV
+CV <- function(x){
+  (sd(x)/mean(x))*100
+}
+
+# Función para calcular asimetria
+A3 <- function(x){
+  3*(mean(x)-median(x))/sd(x)
+}
+
+# Función para calcular el rango
+rango <- function(x){
+  diff(range(x))
+}
+
+# Función para calcular el rango intercuartílico
+RIC <- function(x){
+  quantile(x,probs = 0.75,type = 6)-quantile(x,probs = 0.25,type = 6)
+}
+
+me<-mean(DMark$Monto)
+med<-median(DMark$Monto)
+q1<-quantile(x = DMark$Monto,probs = 0.25,type = 6)
+q3<-quantile(x = DMark$Monto,probs = 0.75,type = 6)
+r<-rango(DMark$Monto)
+ric<-RIC(DMark$Monto)
+s<-sd(DMark$Monto)
+cv<-CV(DMark$Monto)
+as3<-A3(DMark$Monto)
+
+resumen<-as.matrix(rbind(me,med,q1,q3,r,ric,s,cv,as3))
+colnames(resumen)<-c("Valor")
+resumen

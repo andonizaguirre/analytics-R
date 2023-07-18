@@ -1,0 +1,113 @@
+# ===================================================================== #
+# =============== ANÁLISIS DE REGRESIÓN MÚLTIPLE ====================== #
+# ===================================================================== #
+data <- read.delim("clipboard")
+data
+
+# ===================================================================== #
+# ======================= ESTIMACIÓN DEL MODELO ======================= #
+# ===================================================================== #
+
+# Creando los modelos
+# ----------------------------
+
+modelo.B <- lm(Precio ~ ., data = data )
+summary(modelo.B)
+
+# ===================================================================== #
+# ===================== SUPUESTO DE INDEPENDENciA ===================== #
+# ===================================================================== #
+
+library(ggplot2)
+library(car)
+
+# Gráfica de componente + residual
+crPlots(model = modelo.B, terms = ~ ., )
+
+# Gráfica de residuales vs valores individuale y generales / test
+# ---------------------------------------------------------------
+residualPlots(modelo.B, col.quad="blue",smooth=T, type="rstudent")
+
+# ===================================================================== #
+# ====================== SUPUESTO DE LINEALIDAD ======================= #
+# ===================================================================== #
+
+# Gráfica normal y de densidad
+# ----------------------------
+ggplot(data=data, aes(resid(modelo.B))) +
+  geom_density(adjust = 1) + lims(x=c(-30, 30))+
+  stat_function(fun = dnorm, args = list(mean = mean(modelo.B$residuals),
+                                         sd = sd(modelo.B$residuals)), color = "red")
+
+# Gráfica QQPLOT
+# ----------------
+qqnorm(modelo.B$residuals)
+qqline(modelo.B$residuals)
+## Residual normality
+qqPlot(modelo.B)
+
+# Prueba de normalidad
+# ---------------------
+library(nortest)
+shapiro.test(modelo.B$residuals)
+ad.test(modelo.B$residuals)
+ks.test(modelo.B$residuals,"pnorm",mean=mean(modelo.B$residuals),
+        sd=sd(modelo.B$residuals))
+
+# ===================================================================== #
+# ===================== SUPUESTO DE HOCEDASTICIAD ===================== #
+# ===================================================================== #
+
+# Gráfica de residuales vs valore ajustados
+# -----------------------------------------
+ggplot(data = data, aes(modelo.B$fitted.values, modelo.B$residuals)) +
+  geom_point() +
+  geom_smooth(color = "firebrick", se = FALSE) +
+  geom_hline(yintercept = 0) +
+  theme_bw()
+
+# Prueba de homocedasticidad
+# ---------------------------
+library(lmtest)
+bptest(modelo.B)
+
+# ===================================================================== #
+# ===================== SUPUESTO DE INDEPENDENCIA ===================== #
+# ===================================================================== #
+
+# Gráfica de residuos vs la secuencia de orden
+# --------------------------------------------
+residuos <- modelo.B$residuals
+ggplot(data = data, aes(x = seq_along(residuos), y = residuos)) +
+  geom_point(aes(color = residuos)) +
+  scale_color_gradient2(low = "blue3", mid = "grey", high = "red") +
+  geom_line(size = 0.3) +
+  labs(title = "Distribución de los residuos", x = "index", y = "residuo") +
+  geom_hline(yintercept = 0) + theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+library(car)
+dwt(modelo.B, alternative = "two.sided")
+
+# ===================================================================== #
+# ========================== MULTICOLINEALIDAD ======================== #
+# ===================================================================== #
+
+cor(data[,c(1,3,4)])
+
+library(car)
+vif(modelo.B)
+
+# ===================================================================== #
+# ====================== ESTIMACIÓN Y PREDICCIÓN ====================== #
+# ===================================================================== #
+
+# Intervalo de confianza (valor medio)
+# -------------------------------------
+predict(modelo.B, data.frame(X2 = 23, X3 = 21.8),level = 0.95, 
+        interval = "confidence")
+
+# Predicción (valor individual)
+# -----------------------------
+predict(modelo.B, data.frame(X2 = 23, X3 = 21.8),level = 0.95, 
+        interval = "prediction")
